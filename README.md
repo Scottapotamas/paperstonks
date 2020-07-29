@@ -19,6 +19,9 @@ Pretty standard setup:
 - A reboot is required at this point.
 - Clone this repo into the home directory `git clone https://github.com/Scottapotamas/paperstonks.git`
 
+
+Before giving the display as a gift, setup the dispay to have a nice 'welcome' image. Run the `prep_display` program with `python gift.py` to draw a dithered image.
+
 # Usage
 
 - Provide power and allow the system to boot.
