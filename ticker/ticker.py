@@ -9,6 +9,12 @@ from yahooquery import get_trending
 
 print("Super Stonk Summariser")
 
+# Get and format date/time for the titlebar
+current_time = datetime.datetime.now()  
+
+print(current_time.day, current_time.strftime("%b"), current_time.strftime("%I:%M %p"))
+
+
 # Read the user's list of shares with cost-base information
 df = pd.read_csv("costbase.csv")
 
