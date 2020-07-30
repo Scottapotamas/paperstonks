@@ -43,6 +43,15 @@ df["Current Value"]  = df["Quantity"] * df["Market Price"]
 df["Holding %"] = (df["Current Value"] - df["Net Basis"] )/df["Net Basis"]  * 100
 df["Day %"] = (df["Market Price"] - df["Open Price"] )/df["Open Price"]  * 100
 
+# Sort by percentage change today
+df.sort_values(by=['Day %'], inplace=True, ascending=False)
+
+# Calculate portfolio value and percentage portfolio change since basis
+holdings_invested = df["Net Basis"].sum() 
+holdings_current = df["Current Value"].sum()
+portfolio_change = (holdings_current - holdings_invested )/holdings_invested  * 100
+
+
 print(df.head(10))
 
 # Get top gainers/losers
