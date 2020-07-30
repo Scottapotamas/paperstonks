@@ -1,6 +1,3 @@
-
-
-
 #!/usr/bin/env python3
 import pandas as pd
 import datetime
@@ -78,8 +75,8 @@ portfolio_change = (holdings_current - holdings_invested )/holdings_invested  * 
 
 
 # Right Side of display shows the portfolio value and stock breakdown
-right_x = inky_display.WIDTH - 180
-right_y = 40
+right_x = inky_display.WIDTH - 170
+right_y = 30
 
 # Print the total day change and all time change
 anchx = right_x + (inky_display.WIDTH - right_x)/2 
@@ -118,10 +115,10 @@ for i in range(len(df)):
 
 
 # Left side: Render the ASX200 as 'market reference' with percentage
-left_x = 0
-left_y = 40
+left_x = 100
+left_y = 30
 
-anchx = left_x + 110
+anchx = left_x
 anchy = left_y
 
 font = ImageFont.truetype(font_path, 18)
@@ -142,17 +139,52 @@ draw.text((anchx-(fw/2), anchy), aaord_text, inky_display.BLACK, font)
 anchy = anchy + fh
 
 
+# Get other market summary items
+
+ticker_gold = Ticker("GC=F")
+gold = ticker_gold.price.get("GC=F").get("regularMarketPrice")
+
+ticker_oil = Ticker("CL=F")
+oil = ticker_oil.price.get("CL=F").get("regularMarketPrice")
+
+ticker_btc = Ticker("BTC-AUD")
+btc = ticker_btc.price.get("BTC-AUD").get("regularMarketPrice")
+
+ticker_aud = Ticker("AUDUSD=X")
+aud = ticker_aud.price.get("AUDUSD=X").get("regularMarketPrice")
+
+# Render below the ASX text
+
+commodities_text = "{0:<4}{1:>5.0f}  {2:<4}{3:>4.1f}".format("GOLD", gold, "OIL", oil)
+currencies_text = "{0:<4}{1:>5.2f}  {2:<4}{3:>4.1f}k".format("AUD", aud, "BTC", btc/1000)
+
+font = ImageFont.truetype(font_path, 16)
+fw, fh = font.getsize(commodities_text)
+anchy = anchy + 8
+draw.text((anchx - (fw/2), anchy), commodities_text, inky_display.BLACK, font)
+anchy = anchy + fh
+
+draw.text((anchx - (fw/2), anchy), currencies_text, inky_display.BLACK, font)
+anchy = anchy + fh
+
+
+
 # Get top gainers/losers
 num_notable_to_display = 3
 
 s = Screener()
 notable_today = s.get_screeners(['day_gainers_au', 'day_losers_au'], count=num_notable_to_display)
-# pprint.pprint(notable_today['day_gainers_au']['quotes'][0]['symbol'])
 
 gainers_sorted = sorted(notable_today['day_gainers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=True)
 losers_sorted = sorted(notable_today['day_losers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=False)
 
-print("Top Gainers by %:")
+# Render the top gainers/losers 
+font = ImageFont.truetype(font_path, 16)
+fw, fh = font.getsize("A")
+
+anchx = left_x - (fw*16)/1.8
+anchy = anchy + 12
+
 for i in range(0,num_notable_to_display): 
     # Get the human-readable name, if one doesn't exist use the raw code
     stock_name = gainers_sorted[i].get("shortName", None)
@@ -162,7 +194,34 @@ for i in range(0,num_notable_to_display):
     else:
         stock_name = stock_name.replace("FPO","").strip()
 
-    print(stock_name,  gainers_sorted[i]['regularMarketChangePercent'])
+    stock_price = gainers_sorted[i]['regularMarketChangePercent']
+    if stock_price >= 100:
+        price_string = '{0:>+5.1f}x'.format(stock_price/100.0)
+    else:
+        price_string = '{0:>+5.1f}%'.format(stock_price)
+
+    line_y = anchy + (i*fh) + 8
+    line_formatted = '{0:<10} {1}'.format(stock_name, price_string)
+    draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
+
+anchy = line_y + 8
+
+for i in range(0,num_notable_to_display): 
+    # Get the human-readable name, if one doesn't exist use the raw code
+    stock_name = losers_sorted[i].get("shortName", None)
+
+    if stock_name == None:
+        stock_name = losers_sorted[i].get("symbol").replace(".AX","").strip()
+    else:
+        stock_name = stock_name.replace("FPO","").strip()
+
+    stock_price = losers_sorted[i]['regularMarketChangePercent']
+    price_string = '{0:>+5.1f}%'.format(stock_price)
+
+    line_y = anchy + (i*fh) + 8
+    line_formatted = '{0:<10} {1}'.format(stock_name, price_string)
+    draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
+
 
 print("Top Losers by %:")
 for i in range(0,num_notable_to_display): 
