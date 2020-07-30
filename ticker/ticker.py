@@ -62,15 +62,30 @@ notable_today = s.get_screeners(['day_gainers_au', 'day_losers_au'], count=num_n
 # pprint.pprint(notable_today['day_gainers_au']['quotes'][0]['symbol'])
 
 gainers_sorted = sorted(notable_today['day_gainers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=True)
-loseers_sorted = sorted(notable_today['day_losers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=True)
+losers_sorted = sorted(notable_today['day_losers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=False)
 
 print("Top Gainers by %:")
 for i in range(0,num_notable_to_display): 
-    print(gainers_sorted[i]['symbol'].replace(".AX",""), gainers_sorted[i]['shortName'], gainers_sorted[i]['regularMarketChangePercent'])
+    # Get the human-readable name, if one doesn't exist use the raw code
+    stock_name = gainers_sorted[i].get("shortName", None)
+
+    if stock_name == None:
+        stock_name = gainers_sorted[i].get("symbol").replace(".AX","").strip()
+    else:
+        stock_name = stock_name.replace("FPO","").strip()
+
+    print(stock_name,  gainers_sorted[i]['regularMarketChangePercent'])
 
 print("Top Losers by %:")
 for i in range(0,num_notable_to_display): 
-    print(loseers_sorted[i]['symbol'].replace(".AX",""), loseers_sorted[i]['shortName'], loseers_sorted[i]['regularMarketChangePercent'])
+    stock_name = losers_sorted[i].get("shortName", None)
+
+    if stock_name == None:
+        stock_name = losers_sorted[i].get("symbol").replace(".AX","").strip()
+    else:
+        stock_name = stock_name.replace("FPO","").strip()
+
+    print(stock_name, losers_sorted[i]['regularMarketChangePercent'])
 
 
 # What are trending stocks right now?
