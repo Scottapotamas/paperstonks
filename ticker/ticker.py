@@ -13,7 +13,7 @@ from PIL import Image, ImageFont, ImageDraw
 print("Super Stonk Summariser")
 
 # Setup the display
-inky_display = InkyWHAT("black")
+inky_display = InkyWHAT("red")
 inky_display.set_border(inky_display.WHITE)
 img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
 draw = ImageDraw.Draw(img)
@@ -106,13 +106,14 @@ anchy = anchy + 8
 draw.text((anchx, anchy), "       DAY   ALL", inky_display.RED, font)
 anchy = anchy + fh/1.5
 
+offset_mul = 0
+
 for i in range(len(df)):
-    line_y = anchy + (i*fh) + 8
+    offset_mul = offset_mul + 1
+    line_y = anchy + (offset_mul*fh) + 8
     line_formatted = '{0:<4} {1:>5.1f}% {2:>3.0f}%'.format(df["Code"][i].replace(".AX","").strip(), df["Day %"][i], df["Holding %"][i])
 
     draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
-
-
 
 # Left side: Render the ASX200 as 'market reference' with percentage
 left_x = 100
@@ -185,6 +186,7 @@ fw, fh = font.getsize("A")
 anchx = left_x - (fw*16)/1.8
 anchy = anchy + 12
 
+# Top Gainers
 for i in range(0,num_notable_to_display): 
     # Get the human-readable name, if one doesn't exist use the raw code
     stock_name = gainers_sorted[i].get("shortName", None)
@@ -206,6 +208,7 @@ for i in range(0,num_notable_to_display):
 
 anchy = line_y + 8
 
+# Top Losers
 for i in range(0,num_notable_to_display): 
     # Get the human-readable name, if one doesn't exist use the raw code
     stock_name = losers_sorted[i].get("shortName", None)
@@ -222,24 +225,27 @@ for i in range(0,num_notable_to_display):
     line_formatted = '{0:<10} {1}'.format(stock_name, price_string)
     draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
 
-
-print("Top Losers by %:")
-for i in range(0,num_notable_to_display): 
-    stock_name = losers_sorted[i].get("shortName", None)
-
-    if stock_name == None:
-        stock_name = losers_sorted[i].get("symbol").replace(".AX","").strip()
-    else:
-        stock_name = stock_name.replace("FPO","").strip()
-
-    print(stock_name, losers_sorted[i]['regularMarketChangePercent'])
-
+anchy = line_y + 30
 
 # What are trending stocks right now?
-d = get_trending(count=3)
-pprint.pprint(d)
+get_trending = get_trending().get("quotes")
 
+font = ImageFont.truetype(font_path, 16)
+consider_text = "CONSIDER"
+fw, fh = font.getsize(consider_text)
+draw.text((anchx, anchy+(fh/2)), consider_text, inky_display.RED, font)
+anchx = anchx + fw + 8
 
+font = ImageFont.truetype(font_path, 14)
+fw, fh = font.getsize("A")
+
+line_formatted = '{0:<4} {1:<4} {2:<4}'.format(get_trending[0].get("symbol", None), get_trending[1].get("symbol", None), get_trending[2].get("symbol", None))
+draw.text((anchx, anchy ), line_formatted, inky_display.BLACK, font)
+
+anchy = anchy + fh + 4
+
+line_formatted = '{0:<4} {1:<4} {2:<4}'.format(get_trending[3].get("symbol", None), get_trending[4].get("symbol", None), get_trending[5].get("symbol", None))
+draw.text((anchx, anchy ), line_formatted, inky_display.BLACK, font)
 
 # Render out the framebuffer
 inky_display.set_image(img)
