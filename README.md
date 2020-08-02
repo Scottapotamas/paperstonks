@@ -18,7 +18,7 @@ Pretty standard setup:
 - I used Pimoroni's quick setup `curl https://get.pimoroni.com/inky | bash` one-liner to get _that side_ setup (its mostly doing things like installing `pip`, `numpy` and configuring SPI mode on the Pi). It takes a _very_ long time to run.
 - A reboot is required at this point.
 - Clone this repo into the home directory `git clone https://github.com/Scottapotamas/paperstonks.git`
-
+- Use `crontab -e` to edit the cron jobs. Add `*/5 * * * * /home/pi/paperstonks/refresh_stonks.sh` and `@reboot /home/pi/paperstonks/refresh_stonks.sh` as new lines.
 
 Before giving the display as a gift, setup the dispay to have a nice 'welcome' image. Run the `prep_display` program with `python gift.py` to draw a dithered image.
 
@@ -29,7 +29,6 @@ Before giving the display as a gift, setup the dispay to have a nice 'welcome' i
 - The eInk display should display content when ready (system assumes a valid wifi/network connection is present).
 
 - Pulls stock info from Yahoo finance and formats the output for display on the eInk.
-
 
 
 # Updates
