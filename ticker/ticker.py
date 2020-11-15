@@ -121,10 +121,12 @@ left_y = 30
 anchx = left_x
 anchy = left_y
 
+anchx_title = left_x - (fw*16)/1.8 - 8
+
 font = ImageFont.truetype(font_path, 16)
 title_text = "ASX 200"
 fw, fh = font.getsize(title_text)
-draw.text((anchx-(fw/2), anchy), title_text, inky_display.BLACK, font)
+draw.text((anchx_title, anchy), title_text, inky_display.BLACK, font)
 anchy = anchy + fh - 3
 
 ticker_asx = Ticker("^AXJO")
@@ -133,7 +135,7 @@ asx_price = asx_dict.get("regularMarketPrice")
 asx_percent = asx_dict.get("regularMarketChangePercent")*100
 
 font = ImageFont.truetype(font_path, 25)
-aaord_text = "{0:<5.0f} {1:>+2.2f}%".format(asx_price, asx_percent)
+aaord_text = "{0:>+2.2f}% {1:<5.0f}".format(asx_percent, asx_price)
 fw, fh = font.getsize(aaord_text)
 draw.text((anchx-(fw/2), anchy), aaord_text, inky_display.BLACK, font)
 anchy = anchy + fh + 5
@@ -142,7 +144,7 @@ anchy = anchy + fh + 5
 font = ImageFont.truetype(font_path, 16)
 title_text = "NASDAQ"
 fw, fh = font.getsize(title_text)
-draw.text((anchx-(fw/2), anchy), title_text, inky_display.BLACK, font)
+draw.text((anchx_title, anchy), title_text, inky_display.BLACK, font)
 anchy = anchy + fh - 3
 
 ticker_nas = Ticker("^IXIC")
@@ -151,7 +153,7 @@ nas_price = nas_dict.get("regularMarketPrice")
 nas_percent = nas_dict.get("regularMarketChangePercent")*100
 
 font = ImageFont.truetype(font_path, 25)
-nascomp_text = "{0:<5.0f} {1:>+2.2f}%".format(nas_price, nas_percent)
+nascomp_text = "{0:>+2.2f}% {1:<5.0f}".format(nas_percent, nas_price)
 fw, fh = font.getsize(aaord_text)
 draw.text((anchx-(fw/2), anchy), nascomp_text, inky_display.BLACK, font)
 anchy = anchy + fh + 5
@@ -159,7 +161,7 @@ anchy = anchy + fh + 5
 font = ImageFont.truetype(font_path, 16)
 title_text = "S&P 500"
 fw, fh = font.getsize(title_text)
-draw.text((anchx-(fw/2), anchy), title_text, inky_display.BLACK, font)
+draw.text((anchx_title, anchy), title_text, inky_display.BLACK, font)
 anchy = anchy + fh - 3
 
 ticker_sp = Ticker("^GSPC")
@@ -168,7 +170,7 @@ sp_price = sp_dict.get("regularMarketPrice")
 sp_percent = sp_dict.get("regularMarketChangePercent")*100
 
 font = ImageFont.truetype(font_path, 25)
-spcomp_text = "{0:<5.0f} {1:>+2.2f}%".format(sp_price, sp_percent)
+spcomp_text = "{0:>+2.2f}% {1:<5.0f}".format(sp_percent, sp_price)
 fw, fh = font.getsize(aaord_text)
 draw.text((anchx-(fw/2), anchy), spcomp_text, inky_display.BLACK, font)
 anchy = anchy + fh
@@ -206,8 +208,8 @@ anchy = anchy + fh
 # User specified stocks to monitor
 watch_df = pd.read_csv("/home/pi/paperstonks/ticker/watchlist.csv")
 
-watch_first_price = pd.Series([])
-watch_last_price = pd.Series([])
+watch_price = pd.Series([])
+watch_change = pd.Series([])
 
 # Loop through watchlist csv, query pricing info
 for i in range(len(watch_df)):
@@ -216,12 +218,12 @@ for i in range(len(watch_df)):
     ticker_yahoo = Ticker(code_str)
     price_dict = ticker_yahoo.price.get(code_str)
 
-    watch_first_price[i] = price_dict.get("regularMarketOpen")
-    watch_last_price[i] = price_dict.get("regularMarketPrice")
+    watch_price[i] = price_dict.get("regularMarketPrice")
+    watch_change[i] = price_dict.get("regularMarketChangePercent")
 
-watch_df.insert(1, "Open Price", watch_first_price)
-watch_df.insert(2, "Market Price", watch_last_price)
-watch_df["Day %"] = (watch_df["Market Price"] - watch_df["Open Price"] )/watch_df["Open Price"] * 100
+watch_df.insert(1, "Price", watch_price)
+watch_df.insert(1, "Change", watch_change)
+watch_df["Day %"] = watch_df["Change"] * 100
 
 font = ImageFont.truetype(font_path, 16)
 fw, fh = font.getsize("A")
