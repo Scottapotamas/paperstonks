@@ -166,8 +166,6 @@ anchy = anchy + fh
 draw.text((anchx - (fw/2), anchy), currencies_text, inky_display.BLACK, font)
 anchy = anchy + fh
 
-
-
 # Get top gainers/losers
 num_notable_to_display = 3
 
@@ -184,55 +182,6 @@ fw, fh = font.getsize("A")
 anchx = left_x - (fw*16)/1.8
 anchy = anchy + 12
 
-# Top Gainers
-stock_i = 0
-valid_i = 0
-while valid_i <= (num_notable_to_display-1):
-     # Get the human-readable name, if one doesn't exist use the raw code
-    stock_name = gainers_sorted[stock_i].get("shortName", None)
-
-    # TODO consider walking the list and filtering on market cap
-
-    if stock_name == None:
-        stock_name = gainers_sorted[stock_i].get("symbol").replace(".AX","").strip()
-    else:
-        stock_name = stock_name.replace("FPO","").strip()
-
-    stock_price = gainers_sorted[stock_i]['regularMarketChangePercent']
-    if stock_price >= 100:
-        price_string = '{0:>+5.1f}x'.format(stock_price/100.0)
-    else:
-        price_string = '{0:>+5.1f}%'.format(stock_price)
-
-    stock_i += 1
-
-    # Clamp maximum daily increase, over 5x is more likely an error or irrelevant subcent-stock
-    if stock_price <= 500:
-        line_y = anchy + (valid_i*fh) + 8
-        line_formatted = '{0:<10} {1}'.format(stock_name, price_string)
-        draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
-        valid_i += 1
-
-anchy = line_y + 8
-
-# Top Losers
-for i in range(0,num_notable_to_display): 
-    # Get the human-readable name, if one doesn't exist use the raw code
-    stock_name = losers_sorted[i].get("shortName", None)
-
-    if stock_name == None:
-        stock_name = losers_sorted[i].get("symbol").replace(".AX","").strip()
-    else:
-        stock_name = stock_name.replace("FPO","").strip()
-
-    stock_price = losers_sorted[i]['regularMarketChangePercent']
-    price_string = '{0:>+5.1f}%'.format(stock_price)
-
-    line_y = anchy + (i*fh) + 8
-    line_formatted = '{0:<10} {1}'.format(stock_name, price_string)
-    draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
-
-anchy = line_y + 30
 
 # What are trending stocks right now?
 get_trending = get_trending().get("quotes")
