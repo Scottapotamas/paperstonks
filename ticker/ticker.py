@@ -13,7 +13,8 @@ from PIL import Image, ImageFont, ImageDraw
 print("Super Stonk Summariser")
 
 # Setup the display
-inky_display = InkyWHAT("red")
+# inky_display = InkyWHAT("red")
+inky_display = InkyWHAT("black")
 inky_display.set_border(inky_display.WHITE)
 img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
 draw = ImageDraw.Draw(img)
@@ -27,13 +28,13 @@ font = ImageFont.truetype(font_path, 16)
 date_text = current_time.strftime("%d %B")
 x = 0
 y = 0
-draw.text((x, y), date_text, inky_display.RED, font)
+draw.text((x, y), date_text, inky_display.BLACK, font)
 
 time_text = current_time.strftime("%I:%M %p")
 w, h = font.getsize(time_text)
 x = inky_display.WIDTH - w
 y = 0
-draw.text((x, y), time_text, inky_display.RED, font)
+draw.text((x, y), time_text, inky_display.BLACK, font)
 
 
 # Read the user's list of shares with cost-base information
@@ -84,7 +85,7 @@ anchy = right_y
 font = ImageFont.truetype(font_path, 18)
 title_text = "HOLDINGS"
 fw, fh = font.getsize(title_text)
-draw.text((anchx-(fw/2), anchy), title_text, inky_display.RED, font)
+draw.text((anchx-(fw/2), anchy), title_text, inky_display.BLACK, font)
 anchy = anchy + fh
 
 font = ImageFont.truetype(font_path, 30)
@@ -102,7 +103,7 @@ right_x + (inky_display.WIDTH - right_x)/2
 anchx = right_x + (inky_display.WIDTH - right_x)/2 - (fw*16)/2
 anchy = anchy + 8
 
-draw.text((anchx, anchy), "       DAY   ALL", inky_display.RED, font)
+draw.text((anchx, anchy), "       DAY   ALL", inky_display.BLACK, font)
 anchy = anchy + fh/1.5
 
 offset_mul = 0
@@ -123,7 +124,7 @@ anchy = left_y
 font = ImageFont.truetype(font_path, 18)
 title_text = "S&P/ASX 200"
 fw, fh = font.getsize(title_text)
-draw.text((anchx-(fw/2), anchy), title_text, inky_display.RED, font)
+draw.text((anchx-(fw/2), anchy), title_text, inky_display.BLACK, font)
 anchy = anchy + fh
 
 ticker_asx = Ticker("^AXJO")
@@ -166,42 +167,67 @@ anchy = anchy + fh
 draw.text((anchx - (fw/2), anchy), currencies_text, inky_display.BLACK, font)
 anchy = anchy + fh
 
-# Get top gainers/losers
-num_notable_to_display = 3
 
-s = Screener()
-notable_today = s.get_screeners(['day_gainers_au', 'day_losers_au'], count=8)
 
-gainers_sorted = sorted(notable_today['day_gainers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=True)
-losers_sorted = sorted(notable_today['day_losers_au']['quotes'], key=lambda k: k['regularMarketChangePercent'], reverse=False)
+# User specified stocks to monitor
+watch_df = pd.read_csv("/home/pi/paperstonks/ticker/watchlist.csv")
 
-# Render the top gainers/losers 
+watch_first_price = pd.Series([]) 
+watch_last_price = pd.Series([]) 
+
+# Loop through watchlist csv, query pricing info
+for i in range(len(watch_df)): 
+    code_str = watch_df["Code"][i]
+
+    ticker_yahoo = Ticker(code_str)
+    price_dict = ticker_yahoo.price.get(code_str)
+
+    watch_first_price[i] = price_dict.get("regularMarketOpen")
+    watch_last_price[i] = price_dict.get("regularMarketPrice")
+
+watch_df.insert(1, "Open Price", watch_first_price)
+watch_df.insert(2, "Market Price", watch_last_price)
+watch_df["Day %"] = (watch_df["Market Price"] - watch_df["Open Price"] )/watch_df["Open Price"] * 100
+
 font = ImageFont.truetype(font_path, 16)
 fw, fh = font.getsize("A")
 
-anchx = left_x - (fw*16)/1.8
+anchx = left_x - (fw*16)/1.8 + 4
 anchy = anchy + 12
+
+offset_mul = 0
+
+for i in range(len(watch_df)):
+    line_y = anchy + (offset_mul*fh) + 8
+    line_formatted = '{0:<5} {1:>5.1f}%'.format(watch_df["Code"][i].replace(".AX","").strip(), watch_df["Day %"][i])
+    draw.text((anchx, line_y ), line_formatted, inky_display.BLACK, font)
+    offset_mul = offset_mul + 1
+
+anchy = line_y + 8
+
 
 
 # What are trending stocks right now?
-get_trending = get_trending().get("quotes")
 
-font = ImageFont.truetype(font_path, 16)
-consider_text = "CONSIDER"
-fw, fh = font.getsize(consider_text)
-draw.text((anchx, anchy+(fh/2)), consider_text, inky_display.RED, font)
-anchx = anchx + fw + 8
+# get_trending = get_trending().get("quotes")
 
-font = ImageFont.truetype(font_path, 14)
-fw, fh = font.getsize("A")
+# font = ImageFont.truetype(font_path, 16)
+# consider_text = "TRENDING"
+# fw, fh = font.getsize(consider_text)
+# draw.text((anchx, anchy+(fh/2)), consider_text, inky_display.RED, font)
+# anchx = anchx + fw + 8
 
-line_formatted = '{0:<6} {1:<6}'.format(get_trending[0].get("symbol", None), get_trending[1].get("symbol", None), )
-draw.text((anchx, anchy ), line_formatted, inky_display.BLACK, font)
+# font = ImageFont.truetype(font_path, 14)
+# fw, fh = font.getsize("A")
 
-anchy = anchy + fh + 4
+# line_formatted = '{0:<6} {1:<6}'.format(get_trending[0].get("symbol", None), get_trending[1].get("symbol", None), )
+# draw.text((anchx, anchy ), line_formatted, inky_display.BLACK, font)
 
-line_formatted = '{0:<6} {1:<6}'.format(get_trending[2].get("symbol", None), get_trending[3].get("symbol", None), )
-draw.text((anchx, anchy ), line_formatted, inky_display.BLACK, font)
+# anchy = anchy + fh + 4
+
+# line_formatted = '{0:<6} {1:<6}'.format(get_trending[2].get("symbol", None), get_trending[3].get("symbol", None), )
+# draw.text((anchx, anchy ), line_formatted, inky_display.BLACK, font)
+
 
 # Render out the framebuffer
 inky_display.set_image(img)
