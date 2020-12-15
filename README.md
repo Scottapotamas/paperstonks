@@ -22,13 +22,17 @@ Pretty standard setup:
 
 Before giving the display as a gift, setup the dispay to have a nice 'welcome' image. Run the `prep_display` program with `python gift.py` to draw a dithered image.
 
+![welcom](./imgs/welcom.jpg)
+
 # Usage
 
 - Provide power and allow the system to boot.
-
 - The eInk display should display content when ready (system assumes a valid wifi/network connection is present).
-
 - Pulls stock info from Yahoo finance and formats the output for display on the eInk.
+
+
+
+![example](./imgs/example.jpg)
 
 
 # Updates
